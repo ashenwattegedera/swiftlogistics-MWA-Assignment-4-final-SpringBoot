@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="CmsService"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:tns="http://www.swiftlogistics.lk/cms"
+                  targetNamespace="http://www.swiftlogistics.lk/cms">
+
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://www.swiftlogistics.lk/cms"
+                    elementFormDefault="qualified">
+
+            <xsd:element name="createOrderRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="clientId" type="xsd:string"/>
+                        <xsd:element name="clientReference" type="xsd:string"/>
+                        <xsd:element name="amount" type="xsd:double"/>
+                        <xsd:element name="notes" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="createOrderResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cmsOrderId" type="xsd:string"/>
+                        <xsd:element name="status" type="xsd:string"/>
+                        <xsd:element name="message" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="orderStatusRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cmsOrderId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="orderStatusResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cmsOrderId" type="xsd:string"/>
+                        <xsd:element name="status" type="xsd:string"/>
+                        <xsd:element name="message" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="cancelOrderRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cmsOrderId" type="xsd:string"/>
+                        <xsd:element name="reason" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="cancelOrderResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="cmsOrderId" type="xsd:string"/>
+                        <xsd:element name="status" type="xsd:string"/>
+                        <xsd:element name="message" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+        </xsd:schema>
+    </wsdl:types>
+
+    <wsdl:message name="createOrderRequest">
+        <wsdl:part name="parameters" element="tns:createOrderRequest"/>
+    </wsdl:message>
+    <wsdl:message name="createOrderResponse">
+        <wsdl:part name="parameters" element="tns:createOrderResponse"/>
+    </wsdl:message>
+
+    <wsdl:message name="orderStatusRequest">
+        <wsdl:part name="parameters" element="tns:orderStatusRequest"/>
+    </wsdl:message>
+    <wsdl:message name="orderStatusResponse">
+        <wsdl:part name="parameters" element="tns:orderStatusResponse"/>
+    </wsdl:message>
+
+    <wsdl:message name="cancelOrderRequest">
+        <wsdl:part name="parameters" element="tns:cancelOrderRequest"/>
+    </wsdl:message>
+    <wsdl:message name="cancelOrderResponse">
+        <wsdl:part name="parameters" element="tns:cancelOrderResponse"/>
+    </wsdl:message>
+
+    <wsdl:portType name="CmsPort">
+        <wsdl:operation name="createOrder">
+            <wsdl:input message="tns:createOrderRequest"/>
+            <wsdl:output message="tns:createOrderResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="getOrderStatus">
+            <wsdl:input message="tns:orderStatusRequest"/>
+            <wsdl:output message="tns:orderStatusResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="cancelOrder">
+            <wsdl:input message="tns:cancelOrderRequest"/>
+            <wsdl:output message="tns:cancelOrderResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="CmsSoap11Binding" type="tns:CmsPort">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="createOrder">
+            <soap:operation soapAction="http://www.swiftlogistics.lk/cms/createOrder"/>
+            <wsdl:input><soap:body use="literal"/></wsdl:input>
+            <wsdl:output><soap:body use="literal"/></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getOrderStatus">
+            <soap:operation soapAction="http://www.swiftlogistics.lk/cms/getOrderStatus"/>
+            <wsdl:input><soap:body use="literal"/></wsdl:input>
+            <wsdl:output><soap:body use="literal"/></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="cancelOrder">
+            <soap:operation soapAction="http://www.swiftlogistics.lk/cms/cancelOrder"/>
+            <wsdl:input><soap:body use="literal"/></wsdl:input>
+            <wsdl:output><soap:body use="literal"/></wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="CmsService">
+        <wsdl:port name="CmsPort" binding="tns:CmsSoap11Binding">
+            <soap:address location="http://localhost:8081/ws"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>
