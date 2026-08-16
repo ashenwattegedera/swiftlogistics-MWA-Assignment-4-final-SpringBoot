@@ -8,7 +8,7 @@ TCP/IP) — behind a unified "SwiftTrack" platform with asynchronous order proce
 transaction management and real-time notifications.
 
 <!-- Replace <owner>/<repo> with your GitHub repository path to enable the status badge. -->
-<!-- [![CI](https://github.com/shenwattegedera/swiftlogistics-MWA-Assignment-4-final-SpringBoot/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml) -->
+[![CI](https://github.com/shenwattegedera/swiftlogistics-MWA-Assignment-4-final-SpringBoot/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml)
 
 ## Architecture at a glance
 
