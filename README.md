@@ -7,6 +7,9 @@ heterogeneous systems — **CMS** (SOAP/XML), **ROS** (REST/JSON) and **WMS** (p
 TCP/IP) — behind a unified "SwiftTrack" platform with asynchronous order processing, saga-based
 transaction management and real-time notifications.
 
+<!-- Replace <owner>/<repo> with your GitHub repository path to enable the status badge. -->
+<!-- [![CI](https://github.com/shenwattegedera/swiftlogistics-MWA-Assignment-4-final-SpringBoot/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml) -->
+
 ## Architecture at a glance
 
 ```
@@ -39,14 +42,17 @@ Key patterns: **API Gateway**, **Canonical Data Model**, **Message Translator**,
 
 ## Prerequisites
 
-- JDK 17+ (tested on 24)
+- JDK 17+ (tested on 21 and 24)
 - Maven 3.9+
+- `python3` (only needed by `scripts/smoke-test.sh`)
 - Docker **only** if you want a real RabbitMQ instead of the embedded broker
 
 ## Build & test
 
-```powershell
-mvn clean install
+```bash
+mvn clean install          # any OS
+# or
+bash scripts/build.sh      # Linux / macOS
 ```
 
 Runs 20 tests: protocol codec, message translators, saga (happy path + compensation), CMS SOAP
@@ -55,25 +61,50 @@ the end-to-end order flow.
 
 ## Run the demo
 
+The middleware runs an embedded AMQP broker, so no RabbitMQ/Docker is required.
+
+### Linux / macOS (also what CI uses)
+
+```bash
+bash scripts/build.sh      # or: mvn clean install
+bash scripts/run-all.sh    # starts all four services in the background
+bash scripts/stop-all.sh   # stops them
+```
+
+### Windows (PowerShell)
+
 ```powershell
 mvn clean install
 powershell -File scripts\run-all.ps1
 ```
 
 Then open **http://localhost:8080** (client portal) and **http://localhost:8080/driver.html**
-(driver app). The middleware runs an embedded AMQP broker, so no RabbitMQ/Docker is required.
+(driver app).
 
-A fully automated smoke test of the real CMS/ROS/WMS integration:
+### Automated end-to-end smoke test
 
-```powershell
-powershell -File scripts\smoke-test.ps1
+Starts all four services and drives the real CMS/ROS/WMS flow (submit → ROUTE_ASSIGNED → delivered):
+
+```bash
+bash scripts/smoke-test.sh            # Linux / macOS / CI
+# or
+powershell -File scripts\smoke-test.ps1   # Windows
 ```
 
-### Using a real RabbitMQ (production-like)
+## Continuous integration
 
-```powershell
+`.github/workflows/ci.yml` runs on every push/PR on `ubuntu-latest` (JDK 21):
+
+1. **build** — `mvn clean install` (all 20 unit/integration tests) and uploads surefire reports.
+2. **smoke-test** — packages the jars and runs `scripts/smoke-test.sh` against the real CMS, ROS
+   and WMS services, uploading the service logs on failure.
+
+## Using a real RabbitMQ (production-like)
+
+```bash
 docker compose up -d rabbitmq
-java -jar swifttrack-middleware/target/swifttrack-middleware-1.0.0-SNAPSHOT.jar --spring.profiles.active=rabbitmq
+java -jar swifttrack-middleware/target/swifttrack-middleware-1.0.0-SNAPSHOT.jar \
+  --spring.profiles.active=rabbitmq
 ```
 
 ## Documentation
