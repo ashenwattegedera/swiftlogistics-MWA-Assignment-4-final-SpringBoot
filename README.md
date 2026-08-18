@@ -101,11 +101,25 @@ powershell -File scripts\smoke-test.ps1   # Windows
 
 ## Using a real RabbitMQ (production-like)
 
+Start the broker (credentials `swifttrack`/`swifttrack`), then run the middleware with the
+`rabbitmq` profile. The profile swaps out the embedded broker and loads
+`application-rabbitmq.yml` (host/port/credentials).
+
 ```bash
 docker compose up -d rabbitmq
+
+# Windows
+powershell -File scripts\run-all-rabbitmq.ps1
+
+# Linux / macOS
+bash scripts/run-all.sh rabbitmq
+
+# or run the middleware alone
 java -jar swifttrack-middleware/target/swifttrack-middleware-1.0.0-SNAPSHOT.jar \
   --spring.profiles.active=rabbitmq
 ```
+
+Management UI: http://localhost:15672 (login `swifttrack`/`swifttrack`).
 
 ## Documentation
 

@@ -1,0 +1,148 @@
+================================================================================
+SwiftTrack - Middleware Architecture Prototype
+SCS3208 - Middleware Architecture - Assignment 4 (SwiftLogistics)
+================================================================================
+
+
+1. WHAT THIS IS
+-------------------------------------------------------------------------------
+
+SwiftLogistics needs to integrate three systems that cannot talk to each other
+directly because they use completely different technologies:
+
+  - CMS (Client Management System)   - legacy, SOAP / XML over HTTP
+  - ROS (Route Optimisation System)  - third-party, REST / JSON over HTTP
+  - WMS (Warehouse Management System)- proprietary messaging over raw TCP/IP
+
+This prototype is an integration middleware (Java / Spring Boot) that sits
+between these three systems and the user-facing "SwiftTrack" portal and driver
+app. It:
+
+  - exposes one REST API (API Gateway) so clients never touch the backends,
+  - translates between the three data formats (Message Translator pattern),
+  - processes orders asynchronously through a message broker (RabbitMQ),
+  - coordinates the multi-system order flow as an orchestrated Saga, with
+    compensating actions if any backend fails,
+  - guarantees an order is never lost using a transactional outbox,
+  - pushes status changes to the browser in real time (WebSocket/STOMP).
+
+The CMS, ROS and WMS are included as lightweight mock services so the whole
+system runs locally with no external dependencies.
+
+
+2. REQUIREMENTS
+-------------------------------------------------------------------------------
+
+  - Java (JDK) 17 or newer     (tested on 21 and 24)
+  - Maven 3.9 or newer
+  - Docker                      (OPTIONAL - only if you want a real RabbitMQ)
+
+  No database, RabbitMQ or other infrastructure is required: the middleware
+  uses an in-memory H2 database and an embedded message broker by default.
+
+
+3. QUICK START (easiest - no Docker needed)
+-------------------------------------------------------------------------------
+
+Build the project:
+
+    mvn clean install
+
+Start all four services.
+
+Windows (PowerShell):
+
+    powershell -File scripts\run-all.ps1
+
+Mac / Linux:
+
+    bash scripts/run-all.sh
+
+Then open:
+
+    Client portal : http://localhost:8080
+    Driver app    : http://localhost:8080/driver.html
+
+To try it: submit an order in the portal and watch the status advance live
+(CREATED -> CMS_ACCEPTED -> WAREHOUSE_RECEIVED -> PICKED -> PACKED ->
+READY_FOR_DELIVERY -> ROUTE_ASSIGNED). Then open the driver app, load the
+manifest and press "Delivered" - the portal updates immediately.
+
+Stop the services on Mac / Linux with:
+
+    bash scripts/stop-all.sh
+
+
+4. RUNNING WITH A REAL RABBITMQ BROKER (optional)
+-------------------------------------------------------------------------------
+
+The embedded broker is replaced by a real RabbitMQ container using a Spring
+profile. Credentials are already configured (swifttrack / swifttrack).
+
+Step 1 - start RabbitMQ:
+
+    docker compose up -d rabbitmq
+
+Step 2 - build:
+
+    mvn clean install
+
+Step 3 - start the services.
+
+Windows (PowerShell):
+
+    powershell -File scripts\run-all-rabbitmq.ps1
+
+Mac / Linux:
+
+    bash scripts/run-all.sh rabbitmq
+
+RabbitMQ management UI: http://localhost:15672  (login swifttrack/swifttrack)
+
+
+5. SERVICE PORTS
+-------------------------------------------------------------------------------
+
+    Middleware (gateway + UI)   : 8080  (HTTP + WebSocket)
+    CMS (SOAP)                  : 8081
+    ROS (REST)                  : 8082
+    WMS (TCP)                   : 9090
+
+Useful endpoints:
+
+    CMS WSDL     : http://localhost:8081/ws/cms.wsdl
+    Submit order : POST http://localhost:8080/api/orders
+    View order   : GET  http://localhost:8080/api/orders/{orderId}
+    Driver manifest : GET  http://localhost:8080/api/drivers/VH-01/manifest
+
+
+6. RUNNING THE TESTS
+-------------------------------------------------------------------------------
+
+All unit and integration tests (20 tests):
+
+    mvn clean install
+
+End-to-end smoke test (starts all services, submits an order, waits for it to
+reach ROUTE_ASSIGNED, then marks it delivered):
+
+Windows (PowerShell):
+
+    powershell -File scripts\smoke-test.ps1
+
+Mac / Linux (requires python3):
+
+    bash scripts/smoke-test.sh
+
+
+7. WHAT THE CODE CONTAINS
+-------------------------------------------------------------------------------
+
+    swifttrack-common      canonical domain model, events, shared contracts
+    cms-service            mock CMS - SOAP/XML
+    ros-service            mock ROS - REST/JSON
+    wms-service            mock WMS - TCP/IP protocol
+    swifttrack-middleware  gateway, saga, message broker, WebSocket, UI
+
+    docs/                  architecture and phase-by-phase documentation
+    .github/workflows      CI pipeline (build + tests + smoke test)
